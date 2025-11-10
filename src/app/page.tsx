@@ -1,65 +1,62 @@
-import Image from "next/image";
+// src/app/page.tsx
+'use client';
+
+import { useState } from 'react';
+
+const REGIONS = ['euw1','na1','kr','eune1','br1','la1','la2','oc1','tr1','ru','jp1'];
 
 export default function Home() {
+  const [name, setName] = useState('');
+  const [region, setRegion] = useState('euw1');
+  const enableSummoner = process.env.NEXT_PUBLIC_ENABLE_SUMMONER === '1';
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <main className="min-h-screen px-6 py-12 max-w-3xl mx-auto">
+      <h1 className="text-4xl font-semibold tracking-tight">
+        Astral Meta
+      </h1>
+      <p className="opacity-80 mt-2">
+        Beautiful, lightweight League analytics. Fan-made. Not affiliated with Riot Games.
+      </p>
+
+      {/* Summoner Search (hide in production until you have a production key) */}
+      {enableSummoner ? (
+        <div className="mt-8 flex gap-2">
+          <select
+            value={region}
+            onChange={(e)=>setRegion(e.target.value)}
+            className="bg-white/5 border border-white/10 rounded px-3 py-2"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            {REGIONS.map(r=> <option key={r} value={r}>{r.toUpperCase()}</option>)}
+          </select>
+          <input
+            className="flex-1 bg-white/5 border border-white/10 rounded px-3 py-2"
+            placeholder="Summoner name"
+            value={name}
+            onChange={(e)=>setName(e.target.value)}
+            onKeyDown={(e)=>{ if(e.key==='Enter' && name) window.location.href=`/summoner/${region}/${encodeURIComponent(name)}`; }}
+          />
+          <button
+            className="px-4 py-2 rounded bg-white/10 border border-white/20 hover:bg-white/15"
+            onClick={()=> name && (window.location.href=`/summoner/${region}/${encodeURIComponent(name)}`)}
           >
-            Documentation
-          </a>
+            Search
+          </button>
         </div>
-      </main>
-    </div>
+      ) : (
+        <div className="mt-8 text-sm opacity-75">
+          Summoner search is coming soon (awaiting production API key).
+        </div>
+      )}
+
+      <section className="mt-10">
+        <h2 className="text-xl font-medium mb-3">Quick links</h2>
+        <ul className="space-y-2">
+          <li><a className="underline opacity-90 hover:opacity-100" href="/champion/ahri">Ahri build</a></li>
+          <li><a className="underline opacity-90 hover:opacity-100" href="/legal/privacy">Privacy</a></li>
+          <li><a className="underline opacity-90 hover:opacity-100" href="/legal/terms">Terms</a></li>
+        </ul>
+      </section>
+    </main>
   );
 }
