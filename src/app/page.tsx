@@ -1,55 +1,58 @@
-'use client';
-import { useState } from 'react';
+import fs from "fs/promises";
+import { getChampList, champTile } from "@/lib/ddragon";
+import SearchHero from "@/components/SearchHero";
+import PatchTicker from "@/components/PatchTicker";
+import TrendingRow from "@/components/TrendingRow";
+import FeatureCards from "@/components/FeatureCards";
 
-const REGIONS = ['euw1','na1','kr','eune1','br1','la1','la2','oc1','tr1','ru','jp1'];
+export const revalidate = 3600;
 
-export default function Home() {
-  const [name, setName] = useState('');
-  const [region, setRegion] = useState('euw1');
-  const enableSummoner = process.env.NEXT_PUBLIC_ENABLE_SUMMONER === '1';
+export default async function Home() {
+  const { patch, champions } = await getChampList();
+
+  // Prepare light list for hero search
+  const list = champions.map((c:any) => ({
+    id: c.id, name: c.name, tile: champTile(c.id)
+  }));
+
+  // Try to assemble "trending" from builds.json;
+  // otherwise use a tasteful static fallback of iconic champs
+  let builds: any = {};
+  try {
+    const raw = await fs.readFile(process.cwd() + "/public/builds.json", "utf-8");
+    builds = JSON.parse(raw);
+  } catch {}
+
+  const trending = (() => {
+    const entries: {id:string; name:string; tile:string; wr:number|null}[] = [];
+    for (const c of champions) {
+      const b = builds?.[String(c.key)];
+      const role = b?.MIDDLE ?? b?.TOP ?? b?.JUNGLE ?? b?.BOTTOM ?? b?.UTILITY;
+      if (!role?.items?.length) continue;
+      const arr = role.items.slice(0, 6);
+      const wr = arr.reduce((a:number, x:any)=> a + (x.wr||0), 0) / arr.length || null;
+      entries.push({ id: c.id, name: c.name, tile: champTile(c.id), wr });
+    }
+    if (entries.length >= 6) {
+      return entries.sort((a,b)=> (b.wr??0)-(a.wr??0)).slice(0,6);
+    }
+    // fallback curated set
+    const fallbackIds = ["Ahri","Yasuo","Lux","LeeSin","Jinx","Thresh"];
+    return fallbackIds.map(id => {
+      const ch = champions.find((c:any)=>c.id===id)!;
+      return { id: ch.id, name: ch.name, tile: champTile(ch.id), wr: null };
+    });
+  })();
 
   return (
-    <section className="relative mt-12">
-      <div className="card p-8">
-        <h1 className="text-4xl font-semibold tracking-tight">Win More, Tilt Less.</h1>
-        <p className="mt-2 text-white/80">
-          One clean hub for champions, builds, and runes — refreshed nightly.
-        </p>
-
-        {enableSummoner ? (
-          <div className="mt-6 flex flex-col gap-2 sm:flex-row">
-            <select
-              value={region}
-              onChange={(e)=>setRegion(e.target.value)}
-              className="rounded-xl border border-white/10 bg-white/5 px-3 py-3"
-            >
-              {REGIONS.map(r => <option key={r} value={r}>{r.toUpperCase()}</option>)}
-            </select>
-            <input
-              className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3"
-              placeholder="Summoner name or Riot ID (Name#Tag)"
-              value={name}
-              onChange={(e)=>setName(e.target.value)}
-              onKeyDown={(e)=>{ if(e.key==='Enter' && name) window.location.href=`/summoner/${region}/${encodeURIComponent(name)}`; }}
-            />
-            <button
-              className="rounded-xl border border-white/15 bg-gradient-to-r from-[#7C5BFF] to-[#32C5FF] px-5 py-3 font-medium hover:opacity-95"
-              onClick={()=> name && (window.location.href=`/summoner/${region}/${encodeURIComponent(name)}`)}
-            >
-              Search
-            </button>
-          </div>
-        ) : (
-          <div className="mt-6 text-sm text-white/70">
-            Summoner search is coming soon (awaiting production API key).
-          </div>
-        )}
-
-        <div className="mt-8 flex flex-wrap gap-3">
-          <a className="rounded-lg border border-white/10 bg-white/5 px-3 py-1 text-sm hover:bg-white/10" href="/champions">Browse champions</a>
-          <a className="rounded-lg border border-white/10 bg-white/5 px-3 py-1 text-sm hover:bg-white/10" href="/champion/ahri">Ahri build</a>
-        </div>
+    <main className="mx-auto max-w-6xl px-6 py-8 space-y-8">
+      <SearchHero champions={list} />
+      <PatchTicker patch={patch} />
+      <TrendingRow data={trending} />
+      <FeatureCards />
+      <div className="text-center text-xs text-white/50 mt-6">
+        Not affiliated with Riot Games. Data from Riot API & Data Dragon.
       </div>
-    </section>
+    </main>
   );
 }
