@@ -9,6 +9,7 @@ type Champ = {
   title: string;
   tags: string[];
   tile: string;
+  wr: number | null; // 0..1
 };
 
 const ROLES = ["All","Assassin","Fighter","Mage","Marksman","Support","Tank"] as const;
@@ -21,10 +22,7 @@ export default function ChampGrid({ champions }: { champions: Champ[] }) {
     const needle = q.trim().toLowerCase();
     return champions.filter(c => {
       const roleOk = role === "All" || c.tags.includes(role);
-      const textOk =
-        !needle ||
-        c.name.toLowerCase().includes(needle) ||
-        c.id.toLowerCase().includes(needle);
+      const textOk = !needle || c.name.toLowerCase().includes(needle) || c.id.toLowerCase().includes(needle);
       return roleOk && textOk;
     });
   }, [champions, q, role]);
@@ -39,14 +37,16 @@ export default function ChampGrid({ champions }: { champions: Champ[] }) {
             onChange={(e)=>setQ(e.target.value)}
             placeholder="Search champion…"
             className="w-full sm:w-[360px] rounded-xl border border-white/10 bg-white/5 px-4 py-2"
+            aria-label="Search champions"
           />
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter by role">
             {ROLES.map(r => (
               <button
                 key={r}
                 onClick={()=>setRole(r)}
                 className={`rounded-xl px-3 py-1 text-sm border transition
                   ${role===r ? "bg-white/15 border-white/20" : "bg-white/5 border-white/10 hover:bg-white/10"}`}
+                aria-pressed={role===r}
               >
                 {r}
               </button>
@@ -63,9 +63,9 @@ export default function ChampGrid({ champions }: { champions: Champ[] }) {
             href={`/champion/${c.id.toLowerCase()}`}
             className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition will-change-transform
                        hover:border-white/20 hover:shadow-[0_12px_40px_rgba(124,91,255,.15)]"
+            aria-label={`${c.name} details`}
           >
             <div className="relative">
-              {/* image with graceful fallback */}
               <img
                 src={c.tile}
                 alt={c.name}
@@ -78,17 +78,15 @@ export default function ChampGrid({ champions }: { champions: Champ[] }) {
                 }}
                 className="h-32 w-full object-cover opacity-85 transition group-hover:scale-[1.03] group-hover:opacity-100"
               />
-              {/* fallback block */}
-              <div
-                style={{ display: 'none' }}
-                className="h-32 w-full bg-gradient-to-br from-[#1a1728] to-[#0e1019]"
-              />
-              {/* soft overlay */}
+              <div style={{ display: 'none' }} className="h-32 w-full bg-gradient-to-br from-[#1a1728] to-[#0e1019]" />
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 to-transparent" />
-              {/* subtle focus ring on hover */}
-              <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition">
-                <div className="absolute inset-0 ring-1 ring-inset ring-white/15 rounded-2xl" />
-              </div>
+
+              {/* WR badge (top-right) */}
+              {typeof c.wr === 'number' && (
+                <div className="absolute right-2 top-2 rounded-md border border-white/15 bg-black/50 px-2 py-[2px] text-xs font-medium">
+                  WR {(c.wr*100).toFixed(1)}%
+                </div>
+              )}
             </div>
 
             <div className="p-3">

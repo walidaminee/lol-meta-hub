@@ -12,6 +12,16 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+        <head>
+        {process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN ? (
+          <script
+            defer
+            data-domain={process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN}
+            src="https://plausible.io/js/script.js"
+          />
+        ) : null}
+      </head>
+
   return (
     <html lang="en">
       <body className="antialiased selection:bg-white/20">
