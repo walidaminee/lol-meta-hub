@@ -7,4 +7,16 @@
 html, body {
   background: hsl(var(--bg));
   color: hsl(var(--text));
+  min-height: 100%;
+}
+
+/* Frosted glass card */
+.card {
+  @apply rounded-2xl border border-white/10 bg-white/5 backdrop-blur;
+  box-shadow: var(--shadow-soft);
+}
+
+/* Link underline style */
+.link {
+  @apply underline decoration-white/30 underline-offset-4 hover:decoration-white/80;
 }

@@ -1,9 +1,16 @@
 :root {
-  --bg: 12 14% 6%;
-  --card: 18 14% 10%;
-  --muted: 215 16% 34%;
+  /* Base palette (HSL) */
+  --bg: 240 30% 6%;
+  --surface: 240 22% 10%;
   --text: 220 20% 96%;
-  --accent: 268 83% 66%;
-  --accent-2: 195 82% 62%;
-  --ring: 268 83% 66%;
+  --muted: 215 16% 60%;
+
+  /* Accents */
+  --accent: 268 83% 66%;    /* cosmic violet */
+  --accent-2: 195 82% 62%;  /* teal nebula */
+  --danger: 350 84% 63%;
+
+  /* Radii & shadows */
+  --r-card: 1rem;
+  --shadow-soft: 0 10px 30px rgba(0,0,0,.35);
 }
