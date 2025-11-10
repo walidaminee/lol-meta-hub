@@ -4,6 +4,7 @@ import SearchHero from "@/components/SearchHero";
 import PatchTicker from "@/components/PatchTicker";
 import TrendingRow from "@/components/TrendingRow";
 import FeatureCards from "@/components/FeatureCards";
+import PromoCtas from "@/components/PromoCtas";
 
 export const revalidate = 3600;
 
@@ -44,12 +45,13 @@ export default async function Home() {
     });
   })();
 
-  return (
+   return (
     <main className="mx-auto max-w-6xl px-6 py-8 space-y-8">
       <SearchHero champions={list} />
       <PatchTicker patch={patch} />
       <TrendingRow data={trending} />
       <FeatureCards />
+      <PromoCtas />   {/* ⬅️ new bottom strip */}
       <div className="text-center text-xs text-white/50 mt-6">
         Not affiliated with Riot Games. Data from Riot API & Data Dragon.
       </div>
